@@ -1,12 +1,24 @@
 import React from "react";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useQuery, useMutation } from "@apollo/client";
 
-const ALL_PEOPLE = gql`
-  query AllPeople {
-    people {
+const PLACES = gql`
+  query Places {
+    places @client {
       id
-      name
+      location
     }
+  }
+`
+
+const CREATE_PLACE = gql`
+  mutation CreatePlace(
+    $location: String!
+    $id: ID!
+  ) {
+     createPlace @client (
+       location: $location
+       id: $id
+     )
   }
 `;
 
@@ -14,7 +26,8 @@ export default function App() {
   const {
     loading,
     data
-  } = useQuery(ALL_PEOPLE);
+  } = useQuery(PLACES);
+  const [createPlace, newPlace] = useMutation(CREATE_PLACE);
 
   return (
     <main>
@@ -22,14 +35,23 @@ export default function App() {
       <p>
         This application can be used to demonstrate an error in Apollo Client.
       </p>
-      <h2>Names</h2>
+      <h2>Places</h2>
       {loading ? (
         <p>Loading…</p>
       ) : (
         <ul>
-          {data.people.map(person => (
-            <li key={person.id}>{person.name}</li>
+          {data.places.map(place => (
+            <li key={place.id}>{place.location}</li>
           ))}
+          <li key="place-creator">
+            <span className="create-button"
+              onClick={
+                e => createPlace({ variables: { id: "check", location: "thisout" }})
+              }
+            >
+              Clicking here will cause the error
+            </span>
+          </li>
         </ul>
       )}
     </main>
